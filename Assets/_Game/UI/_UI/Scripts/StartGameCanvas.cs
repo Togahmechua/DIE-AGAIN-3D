@@ -13,6 +13,7 @@ public class StartGameCanvas : UICanvas
         {
             AudioManager.Ins.PlaySFX(AudioManager.Ins.click);
             UIManager.Ins.CloseUI<StartGameCanvas>();
+            UIManager.Ins.OpenUI<ChooseLevelCanvas>();
         });
     }
 }

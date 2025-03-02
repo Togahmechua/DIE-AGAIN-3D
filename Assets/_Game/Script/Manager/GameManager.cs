@@ -8,7 +8,7 @@ public class GameManager : Singleton<GameManager>
 
     // Start is called before the first frame update
     public bool isActive;
-    public PlayerController player;
+    public FollowPlayerCamera cam; 
 
     protected void Awake()
     {

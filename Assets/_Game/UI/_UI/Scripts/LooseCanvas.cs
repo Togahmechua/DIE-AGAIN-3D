@@ -8,6 +8,7 @@ public class LooseCanvas : UICanvas
 {
     [Header("---Other Button---")]
     [SerializeField] private Button retryBtn;
+    [SerializeField] private Button menuBtn;
 
     [Header("---Music Button---")]
     [SerializeField] private Button soundBtn;
@@ -28,11 +29,20 @@ public class LooseCanvas : UICanvas
 
     private void Start()
     {
+        menuBtn.onClick.AddListener(() =>
+        {
+            LevelManager.Ins.DespawnMap();
+            UIManager.Ins.CloseUI<MainCanvas>();
+            UIManager.Ins.CloseUI<LooseCanvas>();
+            UIManager.Ins.OpenUI<ChooseLevelCanvas>();
+        });
+
         retryBtn.onClick.AddListener(() =>
         {
             UIManager.Ins.CloseUI<LooseCanvas>();
             //SceneManager.LoadScene(0);
-            GameManager.Ins.player.OnInit();
+            //LevelManager.Ins.level.playerController.OnInit();
+            LevelManager.Ins.LoadMapByID(LevelManager.Ins.curMapID);
         });
 
         soundBtn.onClick.AddListener(() =>

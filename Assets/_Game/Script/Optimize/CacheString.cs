@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CacheString : MonoBehaviour
 {
-    //public static string TAG_LVBTN = "LvBtnIdle";
+    public static string TAG_LVBTN = "LevelBtn";
     public static string TAG_RUN = "Move";
     public static string TAG_IDLE = "Idle";
     public static string TAG_JUMP = "Jump";

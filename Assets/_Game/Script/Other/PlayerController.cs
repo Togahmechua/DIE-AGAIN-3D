@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("-----Player Details-----")]
+    public EMoveType moveType;
+
     [SerializeField] private float speed = 5f;
     [SerializeField] private float jumpForce = 3f;
     [SerializeField] private float distance;
@@ -20,6 +21,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform checkPos;
     [SerializeField] private LayerMask jumpableGround;
 
+    private FixedJoystick joystick; 
     private Vector3 startPos;
     private Animator anim;
     private Rigidbody rb;
@@ -30,6 +32,7 @@ public class PlayerController : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
         startPos = transform.position;
+        joystick = UIManager.Ins.mainCanvas.GetJoystick();
     }
 
     private void Update()
@@ -49,8 +52,23 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        float dirZ = Input.GetAxisRaw("Horizontal");
-        float dirX = Input.GetAxisRaw("Vertical");
+        if (isDead) return;
+
+        float dirX = 0f, dirZ = 0f;
+
+ 
+        switch (moveType)
+        {
+            case EMoveType.KeyBoard:
+                dirZ = Input.GetAxisRaw("Horizontal");
+                dirX = Input.GetAxisRaw("Vertical");
+                break;
+
+            case EMoveType.Joystick:
+                dirZ = joystick.Horizontal;
+                dirX = joystick.Vertical;
+                break;
+        }
 
         Vector3 moveDirection = new Vector3(-dirX, 0, dirZ).normalized;
 
@@ -95,8 +113,11 @@ public class PlayerController : MonoBehaviour
         }
     }
     
-    private void Jump()
+    public void Jump()
     {
+        if (!IsGrounded())
+            return;
+
         AudioManager.Ins.PlaySFX(AudioManager.Ins.jump);
         isJumping = true;
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -112,6 +133,12 @@ public class PlayerController : MonoBehaviour
         return grounded;
     }
 
+    public void ToggleMoveType()
+    {
+        moveType = (moveType == EMoveType.KeyBoard) ? EMoveType.Joystick : EMoveType.KeyBoard;
+        UIManager.Ins.mainCanvas.UpdateMoveUI(moveType);
+    }
+
     private IEnumerator IEDead()
     {
         isDead = true;
@@ -119,6 +146,28 @@ public class PlayerController : MonoBehaviour
         trailEff.SetActive(false);
         yield return new WaitForSeconds(1f);
         UIManager.Ins.OpenUI<LooseCanvas>();
+    }
+
+    private IEnumerator IEWait()
+    {
+        LevelManager.Ins.isWin = true;
+        LevelManager.Ins.curMapID++;
+        if (LevelManager.Ins.curMapID <= LevelManager.Ins.levelList.Count - 1)
+        {
+            // Load the next level
+            yield return new WaitForSeconds(0.5f);
+
+            LevelManager.Ins.LoadMapByID(LevelManager.Ins.curMapID);
+            UIManager.Ins.OpenUI<MainCanvas>();
+        }
+        else
+        {
+            // Reached the last level
+            Debug.Log("All levels completed!");
+            LevelManager.Ins.DespawnMap();
+            UIManager.Ins.CloseUI<MainCanvas>();
+            UIManager.Ins.OpenUI<ChooseLevelCanvas>();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -135,7 +184,8 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Win");
             AudioManager.Ins.PlaySFX(AudioManager.Ins.win);
             //SceneManager.LoadScene(0);
-            transform.position = startPos;
+
+            StartCoroutine(IEWait());
         }
     }
 
@@ -144,4 +194,11 @@ public class PlayerController : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawRay(checkPos.position, Vector3.down * distance);
     }
+}
+
+// Loại di chuyển: Bàn phím hoặc Joystick
+public enum EMoveType
+{
+    KeyBoard,
+    Joystick
 }

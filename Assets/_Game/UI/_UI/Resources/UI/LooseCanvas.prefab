@@ -57,6 +57,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsDestroyOnClose: 0
   retryBtn: {fileID: 1580276158898552455}
+  menuBtn: {fileID: 4535456421724473402}
   soundBtn: {fileID: 6667683469234861981}
   spr:
   - {fileID: 21300000, guid: 35c262d2aeb51724090ea9f65e328822, type: 3}
